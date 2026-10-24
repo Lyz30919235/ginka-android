@@ -1,0 +1,111 @@
+diff --git a/src/process/exe.rs b/src/process/exe.rs
+index a6d388d..425e395 100644
+--- a/src/process/exe.rs
++++ b/src/process/exe.rs
+@@ -159,6 +159,36 @@ fn find_resource_salt_ref(data: &[u8], pe: &PeFile<'_>) -> Result<SaltRef, Strin
+         pos += 1;
+     }
+ 
++    // Packed images may have no salt pointer code; verify nearby candidates.
++    if matches.is_empty() {
++        let resources = pe.resources().map_err(|err| err.to_string())?;
++        let startup = resources
++            .find_resource(&[
++                Name::Id(pelite::image::RT_RCDATA as u32),
++                Name::Str(STARTUP_RESOURCE_NAME),
++            ])
++            .map_err(|err| err.to_string())?;
++        let filter_path = startup_filter_path(&resources).map_err(|err| err.to_string())?;
++        for offset in v2link_salt_offsets(data) {
++            let salt = &data[offset..offset + EXE_RESOURCE_SALT_SIZE];
++            if !decrypt_resource(startup, &filter_path, salt).starts_with(b"TJS2100\0") {
++                continue;
++            }
++            for section in pe.section_headers() {
++                let start = section.PointerToRawData as usize;
++                let end = start + section.SizeOfRawData as usize;
++                if offset >= start && offset + EXE_RESOURCE_SALT_SIZE <= end {
++                    let rva = section.VirtualAddress + (offset - start) as u32;
++                    let base = pe_image_base(pe.image()).ok_or("missing image base")?;
++                    matches.push(SaltRef {
++                        va: base + rva,
++                        rva,
++                    });
++                }
++            }
++        }
++    }
++
+     matches.sort_by_key(|value| (value.va, value.rva));
+     matches.dedup_by_key(|value| (value.va, value.rva));
+     match matches.len() {
+@@ -168,6 +198,18 @@ fn find_resource_salt_ref(data: &[u8], pe: &PeFile<'_>) -> Result<SaltRef, Strin
+     }
+ }
+ 
++// Locates bounded salt candidates immediately before V2Link markers.
++fn v2link_salt_offsets(data: &[u8]) -> Vec<usize> {
++    data.windows(8)
++        .enumerate()
++        .filter_map(|(offset, bytes)| {
++            (bytes == b"V2Link\0\0")
++                .then(|| offset.checked_sub(EXE_RESOURCE_SALT_SIZE))
++                .flatten()
++        })
++        .collect()
++}
++
+ // Converts an image VA from the unpacked EXE code to an RVA.
+ fn va_to_rva(pe: &PeFile<'_>, va: u32) -> Option<u32> {
+     let image_base = pe_image_base(pe.image())?;
+@@ -347,3 +389,18 @@ fn unpack_bootstrap_resource(data: &[u8]) -> Result<Vec<u8>, Box<dyn std::error:
+     }
+     Ok(unpacked)
+ }
++
++#[cfg(test)]
++mod tests {
++    use super::{EXE_RESOURCE_SALT_SIZE, v2link_salt_offsets};
++
++    // Rejects marker offsets that cannot contain a complete preceding salt.
++    #[test]
++    fn v2link_candidates_require_full_salt() {
++        assert!(v2link_salt_offsets(b"V2Link\0\0").is_empty());
++        let mut bytes = vec![0x5a; EXE_RESOURCE_SALT_SIZE + 7];
++        bytes.extend_from_slice(b"V2Link\0\0");
++        assert_eq!(v2link_salt_offsets(&bytes), vec![7]);
++        assert!(v2link_salt_offsets(&bytes[..bytes.len() - 1]).is_empty());
++    }
++}
+diff --git a/src/struct/pbd.rs b/src/struct/pbd.rs
+index 8d68d23..7518837 100644
+--- a/src/struct/pbd.rs
++++ b/src/struct/pbd.rs
+@@ -306,6 +306,10 @@ fn decrypt_payload(
+     outer_iv: &[u8],
+     payload: &[u8],
+ ) -> Result<Vec<u8>> {
++    // Mode zero stores an ordinary, unencrypted VariantArchive payload.
++    if header.crypt_mode == 0 {
++        return Ok(payload.to_vec());
++    }
+     let Some((rounds, block_count)) = crypt_params(header.crypt_mode) else {
+         return Err(PbdError::new(format!(
+             "unsupported PBD crypt mode {}",
+@@ -687,6 +691,16 @@ fn blake2s_g(v: &mut [u32; 16], a: usize, b: usize, c: usize, d: usize, x: u32,
+ mod tests {
+     use super::*;
+ 
++    // Accepts a plain VariantArchive without requiring an encryption key.
++    #[test]
++    fn mode_zero_reads_plain_variant() {
++        let mut bytes = b"TJS/ns0\0TJS\0\0\0\0\0".to_vec();
++        bytes.extend_from_slice(&[4, 0]);
++        bytes.extend_from_slice(&42i64.to_le_bytes());
++        bytes.extend_from_slice(&0u32.to_le_bytes());
++        assert_eq!(Pbd::parse(&bytes).unwrap().root, PbdValue::Integer(42));
++    }
++
+     #[test]
+     // Handles packinone BLAKE2s digest matches verified empty IV behavior.
+     fn packinone_blake2s_digest_matches_verified_empty_iv() {

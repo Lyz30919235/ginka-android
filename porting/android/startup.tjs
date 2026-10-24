@@ -1,0 +1,25 @@
+// Compatibility entry for the pinned Android runtime and statically recovered data.
+var kirikiriz = false;
+var debugWindowEnabled = false;
+var inXP3archivePacked = true;
+var convertMode = false;
+System.getCurrentUILangName = function() { return ""; };
+System.getCurrentLocaleName = function() { return ""; };
+// Enable the compiled UI-data path implemented by the adapter below.
+System._uiloadDefaultPackUse = 0;
+Scripts.loadDataPack = function(filename) {
+    var converted = filename + ".tjs";
+    if (!Storages.isExistentStorage(converted))
+        throw new Exception("Converted data resource is missing: " + filename);
+    return Scripts.evalStorage(converted);
+};
+var ginkaRoutes = Scripts.evalStorage("ginka_paths.tjs");
+for (var ginkaRouteIndex = 0; ginkaRouteIndex < ginkaRoutes.count; ++ginkaRouteIndex) {
+    var ginkaArchive = System.exePath + ginkaRoutes[ginkaRouteIndex][0];
+    if (!Storages.isExistentStorage(ginkaArchive))
+        throw new Exception("Game resource archive is missing: " + ginkaRoutes[ginkaRouteIndex][0]);
+    Storages.addAutoPath(ginkaArchive + ">" + ginkaRoutes[ginkaRouteIndex][1]);
+}
+Plugins.link("KAGParserEx.dll");
+Scripts.execStorage("system/initialize.tjs");
+Debug.message("GINKA_ANDROID_INITIALIZED");

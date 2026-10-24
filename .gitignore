@@ -1,0 +1,18 @@
+# 外部下载工具及其本地登录配置
+/tools/
+
+# 下载内容及临时分片
+/downloads/
+
+# 游戏资源工作副本及本地交付产物
+/work/
+/dist/
+
+# 本地代码构建缓存
+__pycache__/
+/porting/pbd-adapter/target/
+
+# 本地签名材料
+*.p12
+*.jks
+*.keystore

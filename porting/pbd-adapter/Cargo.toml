@@ -1,0 +1,7 @@
+[package]
+name = "ginka-pbd-adapter"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+cxdec-tools = { path = "../../tools/porting/cxdec-tools" }
