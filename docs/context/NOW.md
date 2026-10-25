@@ -36,15 +36,16 @@
 
 ## GitHub 上传
 
-核验日期：2026-10-25；范围：本次 `0.1.0` 版本的源码、标签、Release、11 个发行附件与可复用提示词，不重新扩大游戏运行验证。
+核验日期：2026-10-25；范围：本次 `0.1.0` 版本的源码、标签、Release、11 个发行附件、可复用提示词，以及公开调整后的匿名访问，不重新扩大游戏运行验证。
 
 - 来源：用户明确要求将当前版本上传至 GitHub，并把同类软件移植提示词放到桌面。
-- GitHub 账号为 `Lyz30919235`；[私有仓库 ginka-android](https://github.com/Lyz30919235/ginka-android)已建立，[v0.1.0 测试版](https://github.com/Lyz30919235/ginka-android/releases/tag/v0.1.0)已发布，`draft=false`、`prerelease=true`。发行标签指向源码基线 `8633b04a60d550cecaece1d5d5d23dbe25b0e6a0`；`main` 继续保存本次交付状态的文档修订。访问该仓库和附件需要相应 GitHub 账号权限；发布范围见 [D-003](DECISIONS.md#d-003将当前测试版保存至独立私有-github-仓库)。
+- GitHub 账号为 `Lyz30919235`；[公开仓库 ginka-android](https://github.com/Lyz30919235/ginka-android)已按用户新要求改为 `public`，[v0.1.0 测试版](https://github.com/Lyz30919235/ginka-android/releases/tag/v0.1.0)保持已发布，`draft=false`、`prerelease=true`。发行标签指向源码基线 `8633b04a60d550cecaece1d5d5d23dbe25b0e6a0`；`main` 继续保存本次交付状态的文档修订。发布范围见 [D-004](DECISIONS.md#d-004将当前测试版改为公开发布)。
 - 完整 ZIP 已分成两个小于 2 GiB 的发行附件，见 `dist/github-v0.1.0/`；[分卷清单](https://github.com/Lyz30919235/ginka-android/releases/download/v0.1.0/release-parts.json)是分卷顺序、长度与散列的权威来源。已用 [合并脚本](../../porting/release/merge_package.ps1)实际合并，结果与原完整 ZIP 的长度及 SHA-256 一致。下载与合并步骤见 [RUNBOOK.md](RUNBOOK.md#github-分卷下载与合并)。
 - [可复用提示词](PORTING_PROMPT.md)已创建并导出为桌面 TXT；项目文件是后续修改的权威来源。桌面文件内容与模板一致，未写入密码、令牌或个人设备路径。
 - 全部 11 个附件的远端状态为 `uploaded`，长度及 GitHub 返回的 SHA-256 与本地一致；已回读远端源码 commit、标签目标和 Release 状态。发行附件散列统一见 [RELEASE-SHA256SUMS.txt](https://github.com/Lyz30919235/ginka-android/releases/download/v0.1.0/RELEASE-SHA256SUMS.txt)，非敏感验证记录为 `work/ginka/github-publication.json`。
-- 本次新增提示词、合并脚本、运行时许可副本及第三方来源说明；更新 `.gitignore`、README、PROJECT_INDEX、NOW、MAP、RUNBOOK 和 DECISIONS，沿用 AGENTS 与已有移植实现。本次未重建 APK 或改写原始资源，上传文件与已交付 `0.1.0` 相同。
-- 发布前后相关的 10 份 Markdown、102 个本地链接与标题锚点检查通过，`git diff --check` 通过；33 个源码文件的排除路径与常见敏感格式检查通过。桌面提示词与项目模板逐字一致；未扩大为全项目审计或追加游戏运行测试。
+- 公开访问复核：使用不携带 Authorization 或 Cookie 的请求，仓库与 Release API 均可读取；11 个附件的匿名下载响应为 HTTP 200，长度与发行清单一致。实际下载了安装说明与发行校验清单，SHA-256 一致；证据为 `work/ginka/public-access-verification.json`。
+- 已提供提示词、合并脚本、运行时许可副本及第三方来源说明。本次公开调整修改 README、NOW、DECISIONS 与第三方来源说明，并同步发行说明及相应小型校验附件；沿用 AGENTS、APK、配套资源和其他移植实现，APK 与资源仍为已交付的 `0.1.0`。
+- 发布前后相关的 10 份 Markdown、105 个本地链接与标题锚点检查通过，`git diff --check` 通过；33 个源码文件的排除路径与常见敏感格式检查通过。桌面提示词与项目模板逐字一致；未扩大为全项目审计或追加游戏运行测试。
 - 待核实：ARM 真机、完整剧情与视频等既有缺口见 [RISKS.md](RISKS.md#r-001完整游戏流程与真机兼容验证不足)；本次上传不改变这些验证边界。
 
 ## 密码恢复与资源载入验证

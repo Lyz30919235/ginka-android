@@ -10,7 +10,7 @@
 
 交付位置与当前验证结果从 [NOW.md](docs/context/NOW.md#当前工作) 定位。真机兼容性、完整剧情与视频播放仍待实测；生成 APK 或完成局部模拟器检查不等于整部游戏验收。
 
-GitHub 提供 [v0.1.0 测试版附件](https://github.com/Lyz30919235/ginka-android/releases/tag/v0.1.0)，仓库保持私有；版本与附件的核验范围见 [上传记录](docs/context/NOW.md#github-上传)，分卷下载见 [合并说明](docs/context/RUNBOOK.md#github-分卷下载与合并)。同类任务可复用 [移植提示词](docs/context/PORTING_PROMPT.md)；第三方来源与许可见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
+GitHub 提供 [v0.1.0 测试版附件](https://github.com/Lyz30919235/ginka-android/releases/tag/v0.1.0)，仓库现已公开；版本与附件的核验范围见 [上传记录](docs/context/NOW.md#github-上传)，分卷下载见 [合并说明](docs/context/RUNBOOK.md#github-分卷下载与合并)。同类任务可复用 [移植提示词](docs/context/PORTING_PROMPT.md)；第三方来源与许可见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
 
 ## 文档入口
 
